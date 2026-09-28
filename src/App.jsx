@@ -63,6 +63,7 @@ const quizData = [
 export default function App() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState({});
+  const [isQuizFinished, setIsQuizFinished] = useState(false);
 
   const currentQuestion = quizData[currentIndex];
   const selectedAnswer = userAnswers[currentQuestion.id];
@@ -91,6 +92,53 @@ export default function App() {
   const jumpToQuestion = (index) => {
     setCurrentIndex(index);
   };
+
+  const finishQuiz = () => {
+    setIsQuizFinished(true);
+  };
+
+  const restartQuiz = () => {
+    setCurrentIndex(0);
+    setUserAnswers({});
+    setIsQuizFinished(false);
+  };
+
+  const calculateScore = () => {
+    let score = 0;
+    quizData.forEach((q) => {
+      if (userAnswers[q.id] === q.correctAnswer) {
+        score++;
+      }
+    });
+    return score;
+  };
+
+  if (isQuizFinished) {
+    const score = calculateScore();
+    const total = quizData.length;
+    const percentage = Math.round((score / total) * 100);
+
+    return (
+      <div className="app-container">
+        <h1 className="quiz-title">Quiz</h1>
+        <div className="results-card">
+          <h2>Quiz Complete! 🎉</h2>
+          <div className="score-display">
+            <p className="score-number">{score} / {total}</p>
+            <p className="score-percentage">{percentage}%</p>
+          </div>
+          <p className="score-message">
+            {percentage >= 80 && "Excellent work! 🌟"}
+            {percentage >= 50 && percentage < 80 && "Good job! Keep practicing. 👍"}
+            {percentage < 50 && "Don't give up! Try again. 💪"}
+          </p>
+          <button className="restart-btn" onClick={restartQuiz}>
+            Retake Quiz
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="app-container">
@@ -128,7 +176,18 @@ export default function App() {
 
           <div className="nav-buttons">
             <button onClick={goToPrev} disabled={currentIndex === 0}>Prev</button>
-            <button onClick={goToNext} disabled={currentIndex === quizData.length - 1}>Next</button>
+            
+            {currentIndex === quizData.length - 1 ? (
+              <button 
+                onClick={finishQuiz} 
+                className="finish-btn"
+                disabled={!isAnswered}
+              >
+                Submit Quiz
+              </button>
+            ) : (
+              <button onClick={goToNext}>Next</button>
+            )}
           </div>
 
           {isAnswered && (
